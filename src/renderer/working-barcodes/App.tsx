@@ -1,8 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { useAltScannerViaInput } from "./useBarcodeScanner";
+import React, { useState } from "react";
 import { useBarcodeScanner } from "./useBarcodeScanner.back";
 import { useKeyLogger } from "./useKeyLogger";
-import { useBarcodeScannerEventCapture } from "./useBarcodeScannerEventCapture";
 
 export default function App() {
   useKeyLogger();
