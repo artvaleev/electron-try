@@ -9,7 +9,7 @@ export const useKeyLogger = () => {
       const hex = code.toString(16).padStart(4, "0");
 
       console.log(
-        `AltKey: ${e.altKey} | Key: "${char}" | Char Code: ${code} | Unicode: \\u${hex} | e.code: ${e.code}`
+        `AltKey: ${e.altKey} | Key: "${char}" | Char Code: ${code} | Unicode: \\u${hex} | e.code: ${e.code} | enteredSymbol: ${getEnteredSymbol(e)}`
       );
     };
 

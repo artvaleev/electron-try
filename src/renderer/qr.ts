@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { getEnteredSymbol } from "./keysToSymbolsMapper";
 
 type BinaryScannerHook = {
   data: string | null;
@@ -26,25 +27,29 @@ export const useBinaryScanner = (): BinaryScannerHook => {
       // Игнорируем управляющие клавиши
       if (e.ctrlKey || e.metaKey) return;
 
+      const char = getEnteredSymbol(e);
+
       // Начало сканирования (первый символ)
-      if (!isScanning && e.key.length === 1) {
+      if (!isScanning && char.length === 1) {
         console.log("start");
 
         setIsScanning(true);
-        setRawBytes([e.key.charCodeAt(0)]);
+        setRawBytes([char.charCodeAt(0)]);
         return;
       }
 
       // Продолжение сканирования
       if (isScanning) {
         // Обычные символы
-        if (e.key.length === 1) {
-          setRawBytes((prev) => [...prev, e.key.charCodeAt(0)]);
+        if (char.length === 1) {
+          setRawBytes((prev) => [...prev, char.charCodeAt(0)]);
         }
 
         // Enter - завершение сканирования
         if (e.code === "Enter") {
           try {
+            console.log('decoding');
+            
             const text = new TextDecoder("utf-8").decode(
               new Uint8Array(rawBytes) // Учитываем последний символ
             );
