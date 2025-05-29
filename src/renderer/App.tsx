@@ -16,7 +16,7 @@ function base64ToHex(base64: string): string {
 }
 
 export default function App() {
-  useKeyLogger();
+  // useKeyLogger();
 
   const [value, setValue] = useState<string>("");
   // useBarcodeScanner((data, _dataArr) => {

@@ -1,17 +1,13 @@
 import { useEffect } from "react";
 import { getEnteredSymbol } from "./keysToSymbolsMapper";
 
-type BinaryScannerHook = {
-  isScanning: boolean;
-};
-
 const SCAN_THRESHOLD = 50; // Максимальная задержка между символами (в мс)
-const SCAN_COMPLETE_DELAY = 100; // Задержка для завершения ввода (в мс)
+const SCAN_COMPLETE_DELAY = 50; // Задержка для завершения ввода (в мс)
 const MIN_SCAN_LENGTH = 5; // Минимальная длина последовательности для сканера
 
-export const useBinaryScanner = (onScan: (data: string) => void): BinaryScannerHook => {
+export const useBinaryScanner = (onScan: (data: string) => void): { isScanning: boolean } => {
   let isScanning = false;
-  let rawBytes: number[] = [];
+  let rawString: string = "";
   let lastKeyPressTime = 0; // Время последнего нажатия клавиши
   let inputTimeout: NodeJS.Timeout | null = null;
 
@@ -27,7 +23,7 @@ export const useBinaryScanner = (onScan: (data: string) => void): BinaryScannerH
       if (currentTime - lastKeyPressTime > SCAN_THRESHOLD) {
         // Если задержка больше порога, сбрасываем сканирование
         isScanning = false;
-        rawBytes = [];
+        rawString = '';
       }
 
       lastKeyPressTime = currentTime;
@@ -37,26 +33,25 @@ export const useBinaryScanner = (onScan: (data: string) => void): BinaryScannerH
         clearTimeout(inputTimeout);
       }
       inputTimeout = setTimeout(() => {
-        if (isScanning && rawBytes.length >= MIN_SCAN_LENGTH) {
-          // Проверяем минимальную длину последовательности
-          const text = new TextDecoder("utf-8").decode(new Uint8Array(rawBytes));
-          onScan(text); // Вызываем переданный метод с результатом
+        if (isScanning && rawString.length >= MIN_SCAN_LENGTH) {
+          onScan(rawString);
         }
+
         isScanning = false;
-        rawBytes = [];
+        rawString = '';
       }, SCAN_COMPLETE_DELAY);
 
       // Начало сканирования (первый символ)
       if (!isScanning && char.length === 1) {
         isScanning = true;
-        rawBytes = [char.charCodeAt(0)];
+        rawString = char;
         return;
       }
 
       // Продолжение сканирования
       if (isScanning) {
         if (char.length === 1) {
-          rawBytes.push(char.charCodeAt(0));
+          rawString += char;
         }
       }
     };
