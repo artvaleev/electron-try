@@ -1,8 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { useAltScannerViaInput } from "./useBarcodeScanner";
-import { useBarcodeScanner } from "./useBarcodeScanner.back";
-import { useKeyLogger } from "./useKeyLogger";
-import { useBarcodeScannerEventCapture } from "./useBarcodeScannerEventCapture";
+import React, { useState } from "react";
 import { useBinaryScanner } from "./qr";
 
 function base64ToHex(base64: string): string {
@@ -15,37 +11,70 @@ function base64ToHex(base64: string): string {
   return hex;
 }
 
+const isBase64Encoded = (str: string): boolean => {
+  if (str.length % 4 !== 0) {
+    return false;
+  }
+
+  const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
+  return base64Regex.test(str);
+};
+
+const isBarcode = (data: string): boolean => {
+  return /^[0-9]+$/.test(data);
+}
+
+type ProcessingResult = {
+  rawData: string;
+} & ({
+  isBarcode: true;
+} | {
+  isBarcode: false;
+  isBase64Encoded: true;
+  decodedHexData: string;
+} | {
+  isBarcode: false;
+  isBase64Encoded: false;
+  decodedHexData?: never;
+}
+)
+const processScannedData = (rawData: string): ProcessingResult => {
+  const dataIsBarcode = isBarcode(rawData);
+  if (dataIsBarcode) {
+    return {
+      rawData,
+      isBarcode: true,
+    };
+  }
+
+  if (isBase64Encoded(rawData)) {
+    try {
+      return {
+        rawData,
+        isBarcode: false,
+        isBase64Encoded: true,
+        decodedHexData: base64ToHex(rawData)
+      }
+    } catch (error) {}
+  }
+
+  return {
+    rawData,
+    isBarcode: false,
+    isBase64Encoded: false
+  }
+}
+
 export default function App() {
   // useKeyLogger();
+  const [value, setValue] = useState('')
 
-  const [value, setValue] = useState<string>("");
-  // useBarcodeScanner((data, _dataArr) => {
-  //   console.log("scanned", data);
-  // });
-
-  // const { data, isScanning } = useBinaryScanner();
-  // useEffect(() => {
-  //   if (!data) {
-  //     return
-  //   }
-  //   console.log("data", data);
-
-  //   console.log('base64ToHex', base64ToHex(data));
-    
-  // }, [data]);
-
-  const isScanning = useBinaryScanner((data) => {
-    console.log("scanned", data);
-    try {
-      console.log('base64ToHex', base64ToHex(data));
-    } catch (error) {
-      console.error('cant extract hex from data', data, error);
-    }
+  useBinaryScanner((data) => {
+    console.log("scanned", processScannedData(data));
   })
 
   return (
     <>
-      {isScanning ? "isScanning" : "no isScanning"}
       <h1>Hello World</h1>
       <textarea
         value={value}

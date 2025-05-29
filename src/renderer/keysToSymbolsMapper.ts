@@ -198,7 +198,5 @@ export function getEnteredSymbol(e: KeyboardEvent): string {
       km.code === (e.code as KeyCode)
   );
 
-  const symbol = keyMatch?.value ?? ``;
-  // console.log("e.key", e.key, "e.code", e.code, "symbol", symbol);
-  return symbol;
+  return keyMatch?.value ?? ``;
 }

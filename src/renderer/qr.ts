@@ -1,16 +1,16 @@
 import { useEffect } from "react";
 import { getEnteredSymbol } from "./keysToSymbolsMapper";
 
-const SCAN_THRESHOLD = 50; // Максимальная задержка между символами (в мс)
-const SCAN_COMPLETE_DELAY = 50; // Задержка для завершения ввода (в мс)
+const SCAN_THRESHOLD_MS = 50; // Максимальная задержка между символами (в мс)
+const SCAN_COMPLETE_DELAY_MS = 50; // Задержка для завершения ввода (в мс)
 const MIN_SCAN_LENGTH = 5; // Минимальная длина последовательности для сканера
 
-export const useBinaryScanner = (onScan: (data: string) => void): { isScanning: boolean } => {
-  let isScanning = false;
-  let rawString: string = "";
-  let lastKeyPressTime = 0; // Время последнего нажатия клавиши
-  let inputTimeout: NodeJS.Timeout | null = null;
+let isScanning = false;
+let rawString: string = "";
+let lastKeyPressTime = 0;
+let inputTimeout: NodeJS.Timeout | null = null;
 
+export const useBinaryScanner = (onScan: (data: string) => void): void => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Игнорируем управляющие клавиши
@@ -20,7 +20,7 @@ export const useBinaryScanner = (onScan: (data: string) => void): { isScanning: 
       const currentTime = Date.now();
 
       // Проверяем, является ли ввод быстрым (от сканера)
-      if (currentTime - lastKeyPressTime > SCAN_THRESHOLD) {
+      if (currentTime - lastKeyPressTime > SCAN_THRESHOLD_MS) {
         // Если задержка больше порога, сбрасываем сканирование
         isScanning = false;
         rawString = '';
@@ -39,7 +39,7 @@ export const useBinaryScanner = (onScan: (data: string) => void): { isScanning: 
 
         isScanning = false;
         rawString = '';
-      }, SCAN_COMPLETE_DELAY);
+      }, SCAN_COMPLETE_DELAY_MS);
 
       // Начало сканирования (первый символ)
       if (!isScanning && char.length === 1) {
@@ -57,8 +57,13 @@ export const useBinaryScanner = (onScan: (data: string) => void): { isScanning: 
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onScan]);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
 
-  return { isScanning };
+      if (inputTimeout) {
+        clearTimeout(inputTimeout);
+        inputTimeout = null;
+      }
+    };
+  }, [onScan]);
 };
