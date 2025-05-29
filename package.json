@@ -8,7 +8,9 @@
     "dev": "webpack serve",
     "electron": "wait-on http://localhost:3000 && electron .",
     "start": "concurrently -k \"npm run build -- --watch\" \"npm run dev\" \"npm run electron\"",
-    "start-electron": "npx electron ."
+    "start-electron": "npx electron .",
+    "d": "webpack serve",
+    "e": "npx electron ."
   },
   "keywords": [],
   "author": "",
