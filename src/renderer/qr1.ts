@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getEnteredSymbol } from "./keysToSymbolsMapper";
 
 type BinaryScannerHook = {
@@ -7,7 +7,10 @@ type BinaryScannerHook = {
 
 const SCAN_THRESHOLD = 50; // Максимальная задержка между символами (в мс)
 const SCAN_COMPLETE_DELAY = 100; // Задержка для завершения ввода (в мс)
-const MIN_SCAN_LENGTH = 5; // Минимальная длина последовательности для сканера
+
+// let isScanning = false;
+// let rawBytes: number[] = [];
+// let lastKeyPressTime = 0;
 
 export const useBinaryScanner = (onScan: (data: string) => void): BinaryScannerHook => {
   let isScanning = false;
@@ -18,12 +21,12 @@ export const useBinaryScanner = (onScan: (data: string) => void): BinaryScannerH
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Игнорируем управляющие клавиши
+      
       if (e.ctrlKey || e.metaKey) return;
 
       const char = getEnteredSymbol(e);
       const currentTime = Date.now();
 
-      // Проверяем, является ли ввод быстрым (от сканера)
       if (currentTime - lastKeyPressTime > SCAN_THRESHOLD) {
         // Если задержка больше порога, сбрасываем сканирование
         isScanning = false;
@@ -37,13 +40,12 @@ export const useBinaryScanner = (onScan: (data: string) => void): BinaryScannerH
         clearTimeout(inputTimeout);
       }
       inputTimeout = setTimeout(() => {
-        if (isScanning && rawBytes.length >= MIN_SCAN_LENGTH) {
-          // Проверяем минимальную длину последовательности
+        if (isScanning) {
           const text = new TextDecoder("utf-8").decode(new Uint8Array(rawBytes));
           onScan(text); // Вызываем переданный метод с результатом
+          isScanning = false;
+          rawBytes = [];
         }
-        isScanning = false;
-        rawBytes = [];
       }, SCAN_COMPLETE_DELAY);
 
       // Начало сканирования (первый символ)

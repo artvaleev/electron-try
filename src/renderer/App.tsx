@@ -23,16 +23,25 @@ export default function App() {
   //   console.log("scanned", data);
   // });
 
-  const { data, isScanning } = useBinaryScanner();
-  useEffect(() => {
-    if (!data) {
-      return
-    }
-    console.log("data", data);
+  // const { data, isScanning } = useBinaryScanner();
+  // useEffect(() => {
+  //   if (!data) {
+  //     return
+  //   }
+  //   console.log("data", data);
 
-    console.log('base64ToHex', base64ToHex(data));
+  //   console.log('base64ToHex', base64ToHex(data));
     
-  }, [data]);
+  // }, [data]);
+
+  const isScanning = useBinaryScanner((data) => {
+    console.log("scanned", data);
+    try {
+      console.log('base64ToHex', base64ToHex(data));
+    } catch (error) {
+      console.error('cant extract hex from data', data, error);
+    }
+  })
 
   return (
     <>
